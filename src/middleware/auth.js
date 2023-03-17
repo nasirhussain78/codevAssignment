@@ -4,16 +4,36 @@ import jwt from "jsonwebtoken"
 //Authentication ✅
 const authentication = (req, res, next) => {
     try {
-        let token = req.headers["x-api-key"]
-        console.log(token)
-        if (!token) return res.status(400).send({ status: false, message: "token must be present" });
-        let decodedToken = jwt.verify(token, "codevyasa");
-        if (!decodedToken) return res.status(401).send("token invalid")
-        next()
-    }
-    catch (err) {
-        res.status(500).send({ status: false, message: err.message })
-    }
+        const token = req.header('Authorization', 'Bearer Token')
+    
+        if (!token) {
+          return res
+            .status(403)
+            .send({
+              status: false,
+              message: 'Missing required token in request',
+            });
+        }
+        let validToken = token.split(' ')
+    
+        const decodeToken = jwt.verify(validToken[1], "codevyasa")
+        
+        if (!decodeToken) {
+          return res
+            .status(403)
+            .send({
+              status: false,
+              message: 'Invalid token',
+            });
+        }
+    
+        req.userId = decodeToken.userId
+    
+        next();
+      } catch (err) {
+        console.log(err);
+        res.status(500).send({ msg: err.message });
+      }
     
 }
 

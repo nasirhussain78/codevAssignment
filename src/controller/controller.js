@@ -131,11 +131,21 @@ class Controller {
     //5✅  delete comment
     async deleteComment(req, res) {
         try {
-            const id = req.query.id
+            const id = req.query.id;
+            let userIdFromToken = req.userId;
+
             const comment = await CommentModel.findOne({ _id: id, isDeleted: false })
 
             if (!comment) return res.status(404).send({ status: false, message: 'not found' })
-
+            const userId = comment.user;
+            console.log(userId)
+            console.log(userIdFromToken)
+            if (userIdFromToken != userId) {
+                return res.status(403).send({
+                  status: false,
+                  message: "Unauthorized access.",
+                });
+            }
             const result = await CommentModel.findOneAndUpdate({ _id: id }, { $set: { isDeleted: true } }, { new: true })
             await FeedModel.findOneAndUpdate(
                 { _id: comment.feed },
@@ -188,7 +198,7 @@ class Controller {
                      "codevyasa",
                     { expiresIn: "1h" }
                 );
-                res.status(200).setHeader("x-api-key", token);
+                res.status(200).setHeader("Authorization", token);
                 return res.status(201).send({ status: "LoggedIn", message: 'Success', TOKEN: token });
             }
             catch (error) {

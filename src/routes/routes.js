@@ -12,5 +12,4 @@ router.get('/allComments' ,authentication, controller.allComment);
 router.delete('/deleteComment' ,authentication, controller.deleteComment);
 
 
-
 export default router;
